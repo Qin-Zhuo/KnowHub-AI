@@ -1,0 +1,36 @@
+
+app:
+  # 确定默认创建的管理员账号
+  bootstrap:
+    admin:
+      enabled: ${ADMIN_BOOTSTRAP_ENABLED:true}
+      username: ${ADMIN_BOOTSTRAP_USERNAME:}
+      password: ${ADMIN_BOOTSTRAP_PASSWORD:}
+
+  # jwt验证规则
+  jwt:
+    secret-base64: ${JWT_SECRET_BASE64:}
+    expiration-ms: 3600000
+
+
+server:
+  port: 8082
+
+spring:
+  application:
+    name: knowhub-ai
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/knowhub_ai?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
