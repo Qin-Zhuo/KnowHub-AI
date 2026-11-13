@@ -29,13 +29,13 @@ public class OrganizationTag {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY) // 多个组织标签可以有同一个父标签；多个标签也可以由同一个用户创建。
+    @ManyToOne(fetch = FetchType.LAZY) // 多个子标签可以指向同一个父标签；空值表示根标签。
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "parent_tag_id")
-    private OrganizationTag parentTag; // 直接查询id对应的实体对象
+    private OrganizationTag parentTag; // JPA 关联对象；数据库 parent_tag_id 存储父标签的 tag_id
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false) // 惰性加载，当真正获取该数据时才加载
+    @ManyToOne(fetch = FetchType.LAZY, optional = false) // 关联创建者；数据库 created_by 保存 users.id。
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 

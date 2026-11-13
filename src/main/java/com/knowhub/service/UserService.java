@@ -33,22 +33,22 @@ public interface UserService {
     /**
      * 分页获取用户列表
      * @param keyword 关键词
-     * @param orgTag 组织标签
+     * @param orgTagId 组织标签 ID
      * @param status 状态
      * @param page 页码
      * @param size 每页大小
      * @return 用户分页响应类
      */
-    UserPageResponse getUserList(String keyword, String orgTag, Integer status, int page, int size);
+    UserPageResponse getUserList(String keyword, String orgTagId, Integer status, int page, int size);
 
 
     /**
      * 设置当前用户的主组织标签
      *
      * @param username 当前登录用户名
-     * @param primaryOrg 要设置为主组织的标签 ID
+     * @param primaryOrgTagId 要设置为主组织的标签 ID
      */
-    void setPrimaryOrg(String username, String primaryOrg);
+    void setPrimaryOrgTagId(String username, String primaryOrgTagId);
 
     /**
      * 获取当前用户的组织标签详情

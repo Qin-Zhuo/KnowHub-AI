@@ -5,11 +5,11 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * 创建组织标签请求封装类
- * @param tagId
- * @param name
- * @param description
- * @param parentTag
+ * 创建组织标签请求；tagId 和 parentTagId 都是标签标识，不是展示名称。
+ * @param tagId 新标签 ID
+ * @param name 展示名称
+ * @param description 描述
+ * @param parentTagId 父标签 ID；为空时创建为根标签
  */
 public record CreateOrganizationTagRequest(
         @NotBlank(message = "标签ID不能为空")
@@ -24,6 +24,6 @@ public record CreateOrganizationTagRequest(
         String description,
 
         @Size(max = 300, message = "父标签ID长度不能超过300")
-        String parentTag
+        String parentTagId
 ) {
 }

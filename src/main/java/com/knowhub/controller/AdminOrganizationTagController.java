@@ -33,7 +33,7 @@ public class AdminOrganizationTagController {
                 request.tagId(),
                 request.name(),
                 request.description(),
-                request.parentTag(),
+                request.parentTagId(),
                 userDetails.getUsername()
         );
 
@@ -57,7 +57,7 @@ public class AdminOrganizationTagController {
                 tagId,
                 request.name(),
                 request.description(),
-                request.parentTag()
+                request.parentTagId()
         );
 
         return ResultUtils.success("组织标签更新成功", null);

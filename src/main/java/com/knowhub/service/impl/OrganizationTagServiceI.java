@@ -36,7 +36,7 @@ public class OrganizationTagServiceI implements OrganizationTagService {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "PRIVATE_前缀保留给用户私人组织");
         }
 
-        // org_tags 使用逗号分隔；标签 ID 含逗号会破坏成员关系的精确匹配。
+        // org_tag_ids 使用逗号分隔；标签 ID 含逗号会破坏成员关系的精确匹配。
         if (normalizedTagId.contains(",")) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "标签ID不能包含逗号");
         }
@@ -47,14 +47,14 @@ public class OrganizationTagServiceI implements OrganizationTagService {
 
         OrganizationTag parentTag = null;
         if (parentTagId != null && !parentTagId.isBlank()) {
-            String normalizedParentId = parentTagId.trim();
+            String normalizedParentTagId = parentTagId.trim();
 
             // 私人标签会从管理树中过滤，不能作为公共组织标签的父级。
-            if (normalizedParentId.startsWith("PRIVATE_")) {
+            if (normalizedParentTagId.startsWith("PRIVATE_")) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "不能将组织标签挂到私人组织下");
             }
 
-            parentTag = organizationTagRepository.findById(normalizedParentId)
+            parentTag = organizationTagRepository.findById(normalizedParentTagId)
                     .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "父组织标签不存在"));
         }
 
@@ -109,8 +109,8 @@ public class OrganizationTagServiceI implements OrganizationTagService {
             finalTags.add(tagId);
         }
 
-        boolean alreadyHadPrivateTag = user.getOrgTags() != null
-                        && Arrays.stream(user.getOrgTags().split(","))
+        boolean alreadyHadPrivateTag = user.getOrgTagIds() != null
+                        && Arrays.stream(user.getOrgTagIds().split(","))
                         .map(String::trim)
                         .anyMatch(privateTagId::equals);
 
@@ -118,20 +118,20 @@ public class OrganizationTagServiceI implements OrganizationTagService {
             finalTags.add(privateTagId);
         }
 
-        String currentPrimaryTag = user.getPrimaryOrgTag();
+        String currentPrimaryTagId = user.getPrimaryOrgTagId();
 
-        if (currentPrimaryTag == null || !finalTags.contains(currentPrimaryTag)) {
+        if (currentPrimaryTagId == null || !finalTags.contains(currentPrimaryTagId)) {
             if (finalTags.contains(privateTagId)) {
-                currentPrimaryTag = privateTagId;
+                currentPrimaryTagId = privateTagId;
             } else {
-                currentPrimaryTag = finalTags.stream()
+                currentPrimaryTagId = finalTags.stream()
                         .findFirst()
                         .orElse(null);
             }
         }
 
-        user.setOrgTags(String.join(",", finalTags));
-        user.setPrimaryOrgTag(currentPrimaryTag);
+        user.setOrgTagIds(String.join(",", finalTags));
+        user.setPrimaryOrgTagId(currentPrimaryTagId);
         user.setUpdatedAt(Instant.now());
 
         userRepository.save(user);
@@ -269,7 +269,7 @@ public class OrganizationTagServiceI implements OrganizationTagService {
         }
 
         // 有用户成员关系或主组织引用时拒绝删除。
-        if (userRepository.countUsersUsingOrgTag(normalizedTagId) > 0 || userRepository.existsByPrimaryOrgTag(normalizedTagId)) {
+        if (userRepository.countUsersUsingOrgTagId(normalizedTagId) > 0 || userRepository.existsByPrimaryOrgTagId(normalizedTagId)) {
             throw new BusinessException(ErrorCode.CONFLICT, "该组织标签仍被用户使用，不能删除");
         }
 

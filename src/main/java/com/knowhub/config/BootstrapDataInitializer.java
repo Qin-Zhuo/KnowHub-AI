@@ -81,8 +81,8 @@ public class BootstrapDataInitializer implements ApplicationRunner {
         admin.setUsername(username);
         admin.setPassword(passwordEncoder.encode(password));
         admin.setRole(User.Role.ADMIN);
-        admin.setOrgTags("default,admin");
-        admin.setPrimaryOrgTag("admin");
+        admin.setOrgTagIds("default,admin");
+        admin.setPrimaryOrgTagId("admin");
         admin.setCreatedAt(now);
         admin.setUpdatedAt(now);
 

@@ -26,7 +26,7 @@ public class AdminUserController {
     public ApiResponse<UserPageResponse> getUserList(@Valid @ModelAttribute UserListQueryRequest request) {
         UserPageResponse response = userService.getUserList(
                 request.getKeyword(),
-                request.getOrgTag(),
+                request.getOrgTagId(),
                 request.getStatus(),
                 request.getPage(),
                 request.getSize()
@@ -39,7 +39,7 @@ public class AdminUserController {
     public ApiResponse<Void> assignOrganizationTags(@PathVariable Long userId,
             @Valid @RequestBody AssignOrganizationTagsRequest request) {
 
-        organizationTagService.assignOrganizationTags(userId, request.orgTags());
+        organizationTagService.assignOrganizationTags(userId, request.orgTagIds());
 
         return ResultUtils.success(null);
     }

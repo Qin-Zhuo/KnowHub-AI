@@ -8,26 +8,26 @@ public interface OrganizationTagService {
 
     /**
      * 创建组织标签接口
-     * @param tagId 标签Id
-     * @param name 组织名称
-     * @param description 描述
-     * @param parentTagId 父组织标签Id
+     * @param tagId 新组织标签 ID
+     * @param name 组织标签展示名称
+     * @param description 组织标签描述
+     * @param parentTagId 父组织标签 ID；为空时创建为根标签
      * @param creatorUsername 创建者用户名
-     * @return 返回
+     * @return 新建组织标签的 ID
      */
     String createOrganizationTag(String tagId, String name, String description, String parentTagId, String creatorUsername);
 
     /**
      * 给用户分配组织标签
-     * @param userId 用户Id
-     * @param requestedTagIds 请求的标签列表
+     * @param userId 用户 ID
+     * @param requestedTagIds 要分配的组织标签 ID 列表
      */
     void assignOrganizationTags(Long userId, List<String> requestedTagIds);
 
 
     /**
      * 获取组织标签的树结构
-     * @return 列表存孩子节点
+     * @return 组织标签树的根节点列表
      */
     List<OrganizationTagTreeResponse> getOrganizationTagTree();
 

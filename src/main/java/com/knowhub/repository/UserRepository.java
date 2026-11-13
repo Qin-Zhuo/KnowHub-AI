@@ -25,12 +25,13 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     boolean existsByUsername(String username);
 
 
-
+    /** 统计仍包含指定组织标签 ID 的用户数量。 */
     @Query(
-            value = "SELECT COUNT(*) FROM users WHERE FIND_IN_SET(:tagId, org_tags) > 0",
+            value = "SELECT COUNT(*) FROM users WHERE FIND_IN_SET(:tagId, org_tag_ids) > 0",
             nativeQuery = true
     )
-    long countUsersUsingOrgTag(@Param("tagId") String tagId);
+    long countUsersUsingOrgTagId(@Param("tagId") String tagId);
 
-    boolean existsByPrimaryOrgTag(String primaryOrgTag);
+    /** 判断是否有用户将指定组织标签 ID 设为主组织。 */
+    boolean existsByPrimaryOrgTagId(String primaryOrgTagId);
 }

@@ -62,11 +62,11 @@ public class UserController {
     }
 
     @PutMapping("/primary-org")
-    public ApiResponse<Void> setPrimaryOrg(
+    public ApiResponse<Void> setPrimaryOrgTagId(
             @Valid @RequestBody SetPrimaryOrgRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
 
-        userService.setPrimaryOrg(userDetails.getUsername(), request.primaryOrg());
+        userService.setPrimaryOrgTagId(userDetails.getUsername(), request.primaryOrgTagId());
 
         return ResultUtils.success(null);
     }

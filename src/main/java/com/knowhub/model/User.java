@@ -40,12 +40,12 @@ public class User {
     private Role role;
 
     @Size(max = 300)
-    @Column(name = "org_tags", length = 300)
-    private String orgTags;
+    @Column(name = "org_tag_ids", length = 300)
+    private String orgTagIds; // 逗号分隔的组织标签 ID；沿用教程当前表结构。
 
     @Size(max = 300)
-    @Column(name = "primary_org_tag", length = 300)
-    private String primaryOrgTag;
+    @Column(name = "primary_org_tag_id", length = 300)
+    private String primaryOrgTagId; // 用户当前选择的主组织标签 ID。
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")

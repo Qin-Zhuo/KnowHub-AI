@@ -23,8 +23,8 @@ public class UserListQueryRequest {
     @Size(max = 255, message = "关键词长度不能超过255")
     private String keyword;
 
-    @Size(max = 300, message = "组织标签长度不能超过300")
-    private String orgTag;
+    @Size(max = 300, message = "组织标签ID长度不能超过300")
+    private String orgTagId;
 
     @Min(value = 0, message = "status只能是0或1")
     @Max(value = 1, message = "status只能是0或1")

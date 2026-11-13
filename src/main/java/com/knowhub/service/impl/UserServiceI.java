@@ -67,8 +67,8 @@ public class UserServiceI implements UserService {
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(User.Role.USER); // 设置为角色枚举类
-        user.setOrgTags("default," + privateTagId); // 创建时有两个组织：1、默认组织；2、自己的私有组织
-        user.setPrimaryOrgTag(privateTagId); // 设置主要组织标签Id为：私有组织Id
+        user.setOrgTagIds("default," + privateTagId); // 创建时有两个组织：1、默认组织；2、自己的私有组织
+        user.setPrimaryOrgTagId(privateTagId); // 设置主要组织标签Id为：私有组织Id
         user.setCreatedAt(now);
         user.setUpdatedAt(now);
 
@@ -78,7 +78,7 @@ public class UserServiceI implements UserService {
         privateTag.setTagId(privateTagId);
         privateTag.setName(buildPrivateTagName(username));
         privateTag.setDescription("<" + username + ">的私人组织标签，仅用户本人可访问");
-        privateTag.setCreatedBy(user); // 创建者信息，且是惰性加载
+        privateTag.setCreatedBy(user); // 关联该用户为私人标签的创建者。
         privateTag.setCreatedAt(now);
         privateTag.setUpdatedAt(now);
 
@@ -113,8 +113,8 @@ public class UserServiceI implements UserService {
                         "用户不存在"
                 ));
 
-        List<String> orgTags = user.getOrgTags() == null || user.getOrgTags().isBlank() ? List.of()
-                    : Arrays.stream(user.getOrgTags().split(","))
+        List<String> orgTagIds = user.getOrgTagIds() == null || user.getOrgTagIds().isBlank() ? List.of()
+                    : Arrays.stream(user.getOrgTagIds().split(","))
                 .map(String::trim)
                 .filter(tag -> !tag.isEmpty())
                 .toList();
@@ -123,19 +123,19 @@ public class UserServiceI implements UserService {
                 user.getId(),
                 user.getUsername(),
                 user.getRole().name(),
-                orgTags,
-                user.getPrimaryOrgTag()
+                orgTagIds,
+                user.getPrimaryOrgTagId()
         );
     }
 
     @Override
-    public UserPageResponse getUserList(String keyword, String orgTag, Integer status, int page, int size) {
+    public UserPageResponse getUserList(String keyword, String orgTagId, Integer status, int page, int size) {
         if(page < 1 || size < 1 || size > 100) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "页码必须大于0，每页条数必须在1~100之间");
         }
 
         // 构造筛选条件
-        Specification<User> specification = getSpecification(keyword, orgTag, status);
+        Specification<User> specification = getSpecification(keyword, orgTagId, status);
 
         /*
            创建分页和排序规则：
@@ -160,8 +160,8 @@ public class UserServiceI implements UserService {
                         user.getUsername(),
                         user.getRole().name(),
                         user.isEnabled() ? 1 : 0,
-                        parseOrgTags(user.getOrgTags()), // "default,PRIVATE_qinzhuo" -> ["default", "PRIVATE_qinzhuo"]
-                        user.getPrimaryOrgTag(),
+                        parseOrgTagIds(user.getOrgTagIds()), // "default,PRIVATE_qinzhuo" -> ["default", "PRIVATE_qinzhuo"]
+                        user.getPrimaryOrgTagId(),
                         user.getCreatedAt()
                 ))
                 .toList();
@@ -177,41 +177,41 @@ public class UserServiceI implements UserService {
 
     @Override
     @Transactional
-    public void setPrimaryOrg(String username, String primaryOrg) {
+    public void setPrimaryOrgTagId(String username, String primaryOrgTagId) {
         // 去除输入首尾空格，避免标签值带空格导致匹配失败。
-        String normalizedPrimaryOrg = primaryOrg.trim();
+        String normalizedPrimaryOrgTagId = primaryOrgTagId.trim();
 
         // 根据当前登录用户查询数据库中的用户实体。
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "用户不存在"));
 
         // 解析该用户已加入的组织标签，并做完整匹配。
-        List<String> orgTags = parseOrgTags(user.getOrgTags());
-        if (!orgTags.contains(normalizedPrimaryOrg)) {
+        List<String> orgTagIds = parseOrgTagIds(user.getOrgTagIds());
+        if (!orgTagIds.contains(normalizedPrimaryOrgTagId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN, "不能将未加入的组织设为主组织");
         }
 
         // 用户标签列表里存在，但组织表里找不到，说明数据不一致。
-        if (!organizationTagRepository.existsById(normalizedPrimaryOrg)) {
+        if (!organizationTagRepository.existsById(normalizedPrimaryOrgTagId)) {
             throw new BusinessException(ErrorCode.NOT_FOUND, "组织标签不存在");
         }
 
         // 只修改主组织字段，不改变用户已加入的组织列表。
-        user.setPrimaryOrgTag(normalizedPrimaryOrg);
+        user.setPrimaryOrgTagId(normalizedPrimaryOrgTagId);
         user.setUpdatedAt(Instant.now());
         userRepository.save(user);
     }
 
     @Override
     public UserOrganizationTagsResponse getUserOrganizationTags(String username) {
-        // 先查出当前用户，组织列表以数据库里的 org_tags 为准。
+        // 先查出当前用户，组织列表以数据库里的 org_tag_ids 为准。
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BusinessException(
                         ErrorCode.NOT_FOUND,
                         "用户不存在"
                 ));
 
-        List<String> orgTagIds = parseOrgTags(user.getOrgTags());
+        List<String> orgTagIds = parseOrgTagIds(user.getOrgTagIds());
 
         // 一次查询所有组织标签，避免逐个标签查询数据库。
         Map<String, OrganizationTag> tagsById = organizationTagRepository.findAllById(orgTagIds)
@@ -221,7 +221,7 @@ public class UserServiceI implements UserService {
                                 Function.identity()
                         ));
 
-        // 按用户 org_tags 中的顺序组装详情，保证返回顺序稳定。
+        // 按用户 org_tag_ids 中的顺序组装详情，保证返回顺序稳定。
         List<OrganizationTagDetailResponse> details = orgTagIds.stream()
                 .map(tagId -> {
                     OrganizationTag tag = tagsById.get(tagId);
@@ -241,23 +241,23 @@ public class UserServiceI implements UserService {
 
         return new UserOrganizationTagsResponse(
                 orgTagIds,
-                user.getPrimaryOrgTag(),
+                user.getPrimaryOrgTagId(),
                 details
         );
     }
 
     @NonNull
-    private static Specification<User> getSpecification(String keyword, String orgTag, Integer status) {
+    private static Specification<User> getSpecification(String keyword, String orgTagId, Integer status) {
         if(status != null && status != 0 && status != 1){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "status只能是0（禁用）或1（启用）");
         }
 
         String normalizedKeyword = keyword == null ? null : keyword.trim();
-        String normalizedOrgTag = orgTag == null ? null : orgTag.trim();
+        String normalizedOrgTagId = orgTagId == null ? null : orgTagId.trim();
 
         /*
           specification：
-            root：当前查询的实体，也就是User，用它来引用 username、orgTags 等属性
+            root：当前查询的实体，也就是User，用它来引用 username、orgTagIds 等属性
             cb：CriteriaBuilder，提供 like、equal、greaterThan 等条件构造方法
             predicates：本次查询启用的条件列表
             cb.and()：所有启用的查询条件都必须满足
@@ -270,13 +270,13 @@ public class UserServiceI implements UserService {
                 predicates.add(cb.like(cb.lower(root.<String>get("username")), pattern));
             }
 
-            if(normalizedOrgTag != null && !normalizedOrgTag.isBlank()){
-                // org_tags 是逗号分隔字符串，用 FIND_IN_SET 做完整标签匹配
+            if(normalizedOrgTagId != null && !normalizedOrgTagId.isBlank()){
+                // org_tag_ids 是逗号分隔字符串，用 FIND_IN_SET 做完整标签匹配
                 var tagPosition = cb.function(
                         "FIND_IN_SET", // MySQL 函数名
                         Integer.class,
-                        cb.literal(normalizedOrgTag),
-                        root.<String>get("orgTags")
+                        cb.literal(normalizedOrgTagId),
+                        root.<String>get("orgTagIds")
                 );
 
                 predicates.add(cb.greaterThan(tagPosition, 0));
@@ -292,12 +292,12 @@ public class UserServiceI implements UserService {
         return specification;
     }
 
-    private List<String> parseOrgTags(String orgTags) {
-        if (orgTags == null || orgTags.isBlank()) {
+    private List<String> parseOrgTagIds(String orgTagIds) {
+        if (orgTagIds == null || orgTagIds.isBlank()) {
             return List.of();
         }
 
-        return Arrays.stream(orgTags.split(","))
+        return Arrays.stream(orgTagIds.split(","))
                 .map(String::trim)
                 .filter(tag -> !tag.isEmpty())
                 .toList();
