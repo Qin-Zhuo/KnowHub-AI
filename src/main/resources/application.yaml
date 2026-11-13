@@ -3,7 +3,7 @@ app:
   # 确定默认创建的管理员账号
   bootstrap:
     admin:
-      enabled: ${ADMIN_BOOTSTRAP_ENABLED:true}
+      enabled: ${ADMIN_BOOTSTRAP_ENABLED:false}
       username: ${ADMIN_BOOTSTRAP_USERNAME:}
       password: ${ADMIN_BOOTSTRAP_PASSWORD:}
 

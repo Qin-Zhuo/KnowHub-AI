@@ -4,6 +4,15 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# 本地凭据与运行配置不应提交；示例文件可以提交。
+.env
+.env.*
+!.env.example
+application-local.yaml
+application-local.yml
+*.log
+logs/
+
 ### STS ###
 .apt_generated
 .classpath
