@@ -7,6 +7,22 @@ app:
       username: ${ADMIN_BOOTSTRAP_USERNAME:}
       password: ${ADMIN_BOOTSTRAP_PASSWORD:}
 
+  # 文件上传配置
+  upload:
+    # 单个上传分片的目标大小，单位为字节；默认 5 MiB
+    chunk-size-bytes: ${UPLOAD_CHUNK_SIZE_BYTES:5242880}
+
+  # 文件分片和合并后存储位置配置
+  storage:
+    minio:
+      # 后端运行在本机时，通过映射出来的 API 端口连接 MinIO
+      endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+      # 使用 MinIO 管理的访问凭据，不要直接写入 YAML 或提交到 Git
+      access-key: ${MINIO_ACCESS_KEY}
+      secret-key: ${MINIO_SECRET_KEY}
+      # 使用你已有的 uploads 桶
+      bucket: ${MINIO_BUCKET:uploads}
+
   # jwt验证规则
   jwt:
     secret-base64: ${JWT_SECRET_BASE64:}
@@ -20,8 +36,11 @@ spring:
   application:
     name: knowhub-ai
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
   datasource:
-    url: jdbc:mysql://localhost:3306/knowhub_ai?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3307/knowhub_ai?useSSL=false&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD}
 
@@ -33,4 +52,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: UTC
 
